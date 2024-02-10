@@ -2,7 +2,9 @@ package bguspl.set.ex;
 
 import bguspl.set.Env;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -35,7 +37,7 @@ public class Dealer implements Runnable {
     /**
      * The time when the dealer needs to reshuffle the deck due to turn timeout.
      */
-    private long reshuffleTime = Long.MAX_VALUE;
+    private long reshuffleTime = Long.MAX_VALUE; //TODO
 
     public Dealer(Env env, Table table, Player[] players) {
         this.env = env;
@@ -50,7 +52,7 @@ public class Dealer implements Runnable {
     @Override
     public void run() {
         env.logger.info("thread " + Thread.currentThread().getName() + " starting.");
-        while (!shouldFinish()) {
+        while (!shouldFinish()) { //Game end conditions met
             placeCardsOnTable();
             timerLoop();
             updateTimerDisplay(true);
@@ -158,5 +160,23 @@ public class Dealer implements Runnable {
      */
     private void announceWinners() {
         // TODO implement
+        int maxPoints = -1;
+        int countWinners = 0;
+        for (Player player : players) {
+            if (maxPoints < player.score()) {
+                maxPoints = player.score();
+                countWinners = 1;
+            } else if (maxPoints == player.score())
+                countWinners++;
+        }
+        int indexArray = 0;
+        int[] winners = new int[countWinners];
+        for (Player player : players) {
+            if (maxPoints == player.score()) ;
+            winners[indexArray] = player.id;
+            indexArray++;
+        }
+        env.ui.announceWinner(winners);
     }
+
 }

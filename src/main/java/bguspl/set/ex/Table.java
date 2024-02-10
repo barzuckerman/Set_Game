@@ -5,6 +5,7 @@ import bguspl.set.Env;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.stream.Collectors;
 
 /**
@@ -120,6 +121,7 @@ public class Table {
      */
     public void placeToken(int player, int slot) {
         // TODO implement
+        env.ui.placeToken(player,slot);
     }
 
     /**
@@ -134,4 +136,7 @@ public class Table {
         // TODO check if the the token was successfully removed ?
         return false;
     }
+
+
+
 }
