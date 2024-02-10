@@ -53,7 +53,7 @@ public class Dealer implements Runnable {
         while (!shouldFinish()) {
             placeCardsOnTable();
             timerLoop();
-            updateTimerDisplay(false);
+            updateTimerDisplay(true);
             removeAllCardsFromTable();
         }
         announceWinners();
@@ -77,6 +77,9 @@ public class Dealer implements Runnable {
      */
     public void terminate() {
         // TODO implement
+        for (Player player : players)
+            player.terminate();
+        terminate = true;
     }
 
     /**
@@ -93,6 +96,12 @@ public class Dealer implements Runnable {
      */
     private void removeCardsFromTable() {
         // TODO implement
+        for (Player p : players) {
+            if (p.getActions().size() == 3) {
+
+            }
+        }
+        //table.removeCard();
     }
 
     /**
@@ -100,6 +109,15 @@ public class Dealer implements Runnable {
      */
     private void placeCardsOnTable() {
         // TODO implement
+        Collections.shuffle(deck);
+        int tableSize = env.config.tableSize;
+        boolean missingCards = (table.countCards() < tableSize);
+        for (int i = 0; deck.size() != 0 && missingCards & i < tableSize; i++) {
+            Integer card = table.slotToCard[i];
+            if (card == null) {
+                table.placeCard(deck.remove(0), i);//fill empty table slots with cards from the deck and deleting it from the list
+            }
+        }
     }
 
     /**
@@ -107,6 +125,7 @@ public class Dealer implements Runnable {
      */
     private void sleepUntilWokenOrTimeout() {
         // TODO implement
+        //woken for checking if the players have made a legal set or when timeout
     }
 
     /**
@@ -114,6 +133,14 @@ public class Dealer implements Runnable {
      */
     private void updateTimerDisplay(boolean reset) {
         // TODO implement
+        if (reset) { // reset the timer due to a set being found by a player or due to time run out
+            env.ui.setCountdown(env.config.turnTimeoutMillis, false);
+        }
+        else { // no need to reset, only update to time that passed
+            long timeLeft = reshuffleTime - System.currentTimeMillis();
+            boolean warn = timeLeft < env.config.turnTimeoutWarningMillis; // time is about to run out
+            env.ui.setCountdown(timeLeft, warn);
+        }
     }
 
     /**
@@ -121,6 +148,9 @@ public class Dealer implements Runnable {
      */
     private void removeAllCardsFromTable() {
         // TODO implement
+        for (Integer card : table.slotToCard) {
+            deck.add(card);
+        }
     }
 
     /**
