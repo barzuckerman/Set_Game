@@ -30,6 +30,14 @@ public class Table {
      */
     protected final Integer[] cardToSlot; // slot per card (if any)
 
+    // our implement from here
+
+    /**
+     * saving all the tokens that the player chose
+     */
+    protected int[][] tokendSlots;
+
+
     /**
      * Constructor for testing.
      *
@@ -42,6 +50,13 @@ public class Table {
         this.env = env;
         this.slotToCard = slotToCard;
         this.cardToSlot = cardToSlot;
+        tokendSlots = new int [env.config.players][env.config.tableSize];
+        for (int i = 0; i<env.config.players ; i++){
+            for (int j = 0; j<env.config.tableSize; j++)
+            {
+                tokendSlots[i][j] = 0;
+            }
+        }
     }
 
     /**
@@ -52,6 +67,7 @@ public class Table {
     public Table(Env env) {
 
         this(env, new Integer[env.config.tableSize], new Integer[env.config.deckSize]);
+
     }
 
     /**
@@ -126,6 +142,7 @@ public class Table {
     public void placeToken(int player, int slot) {
         // TODO implement
         env.ui.placeToken(player, slot);
+        tokendSlots[player][slot] = 1;
     }
 
     /**
@@ -137,11 +154,14 @@ public class Table {
      */
     public boolean removeToken(int player, int slot) {
         // TODO implement
+        if(!isPlacedToken(player,slot))
+            return false;
         env.ui.removeToken(player, slot);
-        // TODO check if the the token was successfully removed ?
-        return false;
+        tokendSlots[player][slot] = 0;
+        return true;
     }
 
+    //this function return the cards as the slot the player chose (in order to check set)
     public int[] cardsTokenedByPlayer(int[] slots) {
         int[] cards = new int[slots.length];
         for (int i = 0; i < cards.length; i++) {

@@ -66,6 +66,22 @@ public class Player implements Runnable {
      */
     private Dealer dealer;
 
+    /**
+     * queue for the player slot with token
+     */
+    private LinkedBlockingQueue<Integer> playerTokens;
+
+
+    /**
+     * a flag to see if the player's thread on freeze
+     */
+    private boolean isFreeze = false;
+    /**
+     * in order not to make magic numbers
+     */
+    private int featureSize;
+
+
 
     /**
      * The class constructor.
@@ -84,6 +100,7 @@ public class Player implements Runnable {
         this.incomingActions = new LinkedList<>();
         this.dealer = dealer;
         this.score = 0;
+
     }
 
     /**
@@ -145,22 +162,8 @@ public class Player implements Runnable {
      */
     public void keyPressed(int slot) {
         // TODO implement
-        Queue<Integer> temp = new LinkedList<>();
-        boolean newElement = true;
-        while (!incomingActions.isEmpty()){
-            Integer current = incomingActions.remove();
-            if (current != slot)
-                temp.add(current);
-            else{
-                table.removeToken(id, slot);
-                newElement = false;
-            }
-        }
-        incomingActions = temp;
-        if (incomingActions.size() < 3 && newElement) {
+        if(!isFreeze)
             incomingActions.add(slot);
-            table.placeToken(id, slot);
-        }
     }
 
     /**
@@ -175,10 +178,16 @@ public class Player implements Runnable {
         env.ui.setScore(id, ++score);
 
         long millis = env.config.pointFreezeMillis;
-        env.ui.setFreeze(id, millis);
-        try {
-            Thread.sleep(millis);}
-        catch (InterruptedException e) {}
+        isFreeze = true;
+        for (long i = millis; i > 0; i = i - 1000) {
+            env.ui.setFreeze(id, i);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+            }
+        }
+        env.ui.setFreeze(id, 0);
+        isFreeze = false;
     }
 
     /**

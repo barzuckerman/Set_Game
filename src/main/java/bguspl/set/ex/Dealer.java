@@ -59,6 +59,10 @@ public class Dealer implements Runnable {
         this.table = table;
         this.players = players;
         deck = IntStream.range(0, env.config.deckSize).boxed().collect(Collectors.toList());
+        playerLock = new Object();
+        featureSize = env.config.featureSize;
+        this.sem = new Semaphore(1);
+
     }
 
     /**
@@ -99,6 +103,7 @@ public class Dealer implements Runnable {
         // TODO implement
         for (Player player : players)
             player.terminate();
+
         terminate = true;
     }
 
@@ -173,6 +178,7 @@ public class Dealer implements Runnable {
         }
         for (int i = 0; i < env.config.tableSize; i++) {
             table.removeCard(i);
+            table.resetTokens();
         }
     }
 
@@ -193,16 +199,17 @@ public class Dealer implements Runnable {
         int indexArray = 0;
         int[] winners = new int[countWinners];
         for (Player player : players) {
-            if (maxPoints == player.score()) ;
-            winners[indexArray] = player.id;
-            indexArray++;
+            if (maxPoints == player.score()) {
+                winners[indexArray] = player.id;
+                indexArray++;
+            }
         }
         env.ui.announceWinner(winners);
     }
 
     private void createPlayerThreads() {
         for (Player p : players) {
-            Thread playerThread = new Thread(p, "player " + p.id);
+            ThreadLogger playerThread = new ThreadLogger(p, "player " + p.id, env.logger);
             playerThread.start();
         }
     }
