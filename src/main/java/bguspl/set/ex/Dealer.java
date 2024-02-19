@@ -62,6 +62,8 @@ public class Dealer implements Runnable {
         playerLock = new Object();
         featureSize = env.config.featureSize;
         this.sem = new Semaphore(1);
+        cardDealing = true;
+        //this.Pthreads = new ArrayList<>();
 
     }
 
@@ -81,6 +83,9 @@ public class Dealer implements Runnable {
         }
         announceWinners();
         env.logger.info("thread " + Thread.currentThread().getName() + " terminated.");
+//        try {
+//            dealerThread.join(); // Wait for the thread to finish
+//        } catch (InterruptedException e) {}
     }
 
     /**
@@ -132,6 +137,7 @@ public class Dealer implements Runnable {
      */
     private void placeCardsOnTable() {
         // TODO implement
+        cardDealing = true;
         Collections.shuffle(deck);
         int tableSize = env.config.tableSize;
         boolean missingCards = (table.countCards() < tableSize);
@@ -141,6 +147,7 @@ public class Dealer implements Runnable {
                 table.placeCard(deck.remove(0), i);//fill empty table slots with cards from the deck and deleting it from the list
             }
         }
+        cardDealing = false;
     }
 
     /**
@@ -210,6 +217,7 @@ public class Dealer implements Runnable {
     private void createPlayerThreads() {
         for (Player p : players) {
             ThreadLogger playerThread = new ThreadLogger(p, "player " + p.id, env.logger);
+            //Pthreads.add(playerThread);
             playerThread.start();
         }
     }
@@ -240,7 +248,14 @@ public class Dealer implements Runnable {
 
     }
 
-    public BlockingQueue<Integer> getPlayerClaimSet() {
-        return playersClaimSet;
-    }
+
+//    public void terminatePlayersThreads(){
+//        for (int i = Pthreads.size() - 1; i >= 0; i--) {
+//            Thread thread = Pthreads.get(i);
+//            // gracefully terminate each thread
+//            try {
+//                thread.join(); // wait for the player thread to finish
+//            } catch (InterruptedException e) {}
+//        }
+//    }
 }
