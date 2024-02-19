@@ -1,0 +1,57 @@
+[18:19:59.927] [INFO   ] thread main starting.
+[18:19:59.935] [SEVERE ] cannot read configuration file config.properties trying from resources.
+[18:19:59.937] [SEVERE ] configuration file was loaded from resources directory.
+[18:20:00.948] [INFO   ] thread dealer starting.
+[18:20:00.949] [INFO   ] thread dealer starting.
+[18:20:00.950] [INFO   ] thread player 0 starting.
+[18:20:00.950] [INFO   ] thread player 1 starting.
+[18:20:01.078] [SEVERE ] placing card 7 in slot 0
+[18:20:01.186] [SEVERE ] placing card 0 in slot 1
+[18:20:01.296] [SEVERE ] placing card 41 in slot 2
+[18:20:01.406] [SEVERE ] placing card 24 in slot 3
+[18:20:01.515] [SEVERE ] placing card 52 in slot 4
+[18:20:01.625] [SEVERE ] placing card 30 in slot 5
+[18:20:01.733] [SEVERE ] placing card 40 in slot 6
+[18:20:01.842] [SEVERE ] placing card 65 in slot 7
+[18:20:01.949] [SEVERE ] placing card 60 in slot 8
+[18:20:02.058] [SEVERE ] placing card 12 in slot 9
+[18:20:02.166] [SEVERE ] placing card 75 in slot 10
+[18:20:02.276] [SEVERE ] placing card 19 in slot 11
+[18:20:03.288] [SEVERE ] updating countdown to 58994
+[18:20:04.293] [SEVERE ] updating countdown to 57989
+[18:20:05.302] [SEVERE ] updating countdown to 56980
+[18:20:06.303] [SEVERE ] updating countdown to 55979
+[18:20:07.109] [SEVERE ] key 73 was pressed by player 2
+[18:20:07.110] [SEVERE ] player 2 placing token on slot 1
+[18:20:07.124] [SEVERE ] key 87 was pressed by player 1
+[18:20:07.125] [SEVERE ] player 1 placing token on slot 1
+[18:20:07.311] [SEVERE ] updating countdown to 54971
+[18:20:08.321] [SEVERE ] updating countdown to 53961
+[18:20:09.331] [SEVERE ] updating countdown to 52951
+[18:20:10.345] [SEVERE ] updating countdown to 51937
+[18:20:11.358] [SEVERE ] updating countdown to 50924
+[18:20:11.788] [SEVERE ] key 83 was pressed by player 1
+[18:20:11.789] [SEVERE ] player 1 placing token on slot 5
+[18:20:11.789] [SEVERE ] key 75 was pressed by player 2
+[18:20:11.789] [SEVERE ] player 2 placing token on slot 5
+[18:20:12.369] [SEVERE ] updating countdown to 49913
+[18:20:13.382] [SEVERE ] updating countdown to 48900
+[18:20:14.393] [SEVERE ] updating countdown to 47889
+[18:20:14.972] [SEVERE ] key 90 was pressed by player 1
+[18:20:14.972] [SEVERE ] player 1 placing token on slot 8
+[18:20:14.972] [SEVERE ] key 77 was pressed by player 2
+[18:20:14.972] [SEVERE ] player 2 placing token on slot 8
+[18:20:21.325] [SEVERE ] updating countdown to 40957
+[18:20:25.642] [SEVERE ] removing player 1 token from slot 1
+[18:20:25.643] [SEVERE ] removing card from slot 1
+[18:20:25.644] [SEVERE ] removing player 1 token from slot 5
+[18:20:25.754] [SEVERE ] removing card from slot 5
+[18:20:25.755] [SEVERE ] removing player 1 token from slot 8
+[18:20:25.863] [SEVERE ] removing card from slot 8
+[18:20:25.863] [SEVERE ] removing player 2 token from slot 1
+[18:20:25.863] [SEVERE ] removing player 2 token from slot 5
+[18:20:25.864] [SEVERE ] removing player 2 token from slot 8
+[18:20:25.865] [INFO   ] thread dealer terminated.
+[18:20:30.875] [SEVERE ] thanks for playing... it was fun!
+[18:20:30.875] [INFO   ] thread main terminated.
+[18:20:30.875] [SEVERE ] disposing of user interface elements

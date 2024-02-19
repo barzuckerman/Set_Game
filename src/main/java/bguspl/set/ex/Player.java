@@ -5,6 +5,8 @@ import bguspl.set.Env;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * This class manages the players' threads and data
@@ -59,7 +61,7 @@ public class Player implements Runnable {
     /**
      * queue for the player actions
      */
-    private Queue<Integer> incomingActions;
+    private LinkedBlockingQueue<Integer> incomingActions;
 
     /**
      * the game Dealer
@@ -79,8 +81,7 @@ public class Player implements Runnable {
     /**
      * in order not to make magic numbers
      */
-    private int featureSize;
-
+    private final int featureSize;
 
 
     /**
@@ -97,7 +98,9 @@ public class Player implements Runnable {
         this.table = table;
         this.id = id;
         this.human = human;
-        this.incomingActions = new LinkedList<>();
+        this.incomingActions = new LinkedBlockingQueue<>();
+        featureSize = env.config.featureSize;
+        this.playerTokens = new LinkedBlockingQueue<>(featureSize);
         this.dealer = dealer;
         this.score = 0;
 
@@ -114,13 +117,30 @@ public class Player implements Runnable {
 
         while (!terminate) {
             // TODO implement main player loop
-            if(incomingActions.size() == 3){ //third token placed
-                dealer.notify(); //wait for point or penalty TODO
-                incomingActions = new LinkedList<>(); //clear key input queue
-            }
-
+            if (!dealer.cardDealing) {
+                isFreeze = false;
+                if (!incomingActions.isEmpty()) { // if there is a new key pressed
+                    int desiredToken = incomingActions.poll();
+                    if (table.isPlacedToken(id, desiredToken)) { // remove token
+                        removeToken(desiredToken);
+                        table.removeToken(id, desiredToken);
+                    } else if (playerTokens.size() < featureSize) { // place token
+                        table.placeToken(id, desiredToken);
+                        playerTokens.add(desiredToken);
+                        if (playerTokens.size() == featureSize) // if the current token is the third one
+                            dealer.setPlayersClaimSet(this.id);
+                    }
+                }
+                synchronized (this) {
+                    notifyAll();
+                }
+            } else
+                isFreeze = true;
         }
-        if (!human) try { aiThread.join(); } catch (InterruptedException ignored) {}
+        if (!human) try {
+            aiThread.join();
+        } catch (InterruptedException ignored) {
+        }
         env.logger.info("thread " + Thread.currentThread().getName() + " terminated.");
     }
 
@@ -135,11 +155,14 @@ public class Player implements Runnable {
             while (!terminate) {
                 // TODO implement player key press simulator
                 Random random = new Random();
-                int randomNumber = random.nextInt(12) + 1;
-                keyPressed(randomNumber);
+                int randomNumber = random.nextInt(env.config.tableSize);
+                this.keyPressed(randomNumber);
                 try {
-                    synchronized (this) { wait(); }
-                } catch (InterruptedException ignored) {}
+                    synchronized (this) {
+                        wait(); //TODO why the thread waits?
+                    }
+                } catch (InterruptedException ignored) {
+                }
             }
             env.logger.info("thread " + Thread.currentThread().getName() + " terminated.");
         }, "computer-" + id);
@@ -152,7 +175,6 @@ public class Player implements Runnable {
     public void terminate() {
         // TODO implement
         terminate = true;
-
     }
 
     /**
@@ -162,8 +184,13 @@ public class Player implements Runnable {
      */
     public void keyPressed(int slot) {
         // TODO implement
-        if(!isFreeze)
-            incomingActions.add(slot);
+
+        if (!isFreeze)
+            if (table.slotToCard[slot] != null) { // check that there is a card in the desired slot
+                incomingActions.add(slot);
+            }
+
+
     }
 
     /**
@@ -176,7 +203,6 @@ public class Player implements Runnable {
         // TODO implement
         int ignored = table.countCards(); // this part is just for demonstration in the unit tests
         env.ui.setScore(id, ++score);
-
         long millis = env.config.pointFreezeMillis;
         isFreeze = true;
         for (long i = millis; i > 0; i = i - 1000) {
@@ -196,16 +222,38 @@ public class Player implements Runnable {
     public void penalty() {
         // TODO implement
         long millis = env.config.penaltyFreezeMillis;
-        env.ui.setFreeze(id, millis);
-        try {
-            Thread.sleep(millis);}
-        catch (InterruptedException e) {}
-
+        isFreeze = true;
+        for (long i = millis; i > 0; i = i - 1000) {
+            env.ui.setFreeze(id, i);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+            }
+        }
+        env.ui.setFreeze(id, 0);
+        isFreeze = false;
     }
 
     public int score() {
         return score;
     }
 
-    public Queue<Integer> getActions(){return incomingActions;}
+    public LinkedBlockingQueue<Integer> getPlayerTokens() {
+        return playerTokens;
+    }
+
+    public void resetQueue() {
+        playerTokens.clear(); //clear key input queue
+    }
+
+    public void removeToken(int slot) {
+        LinkedBlockingQueue<Integer> temp = new LinkedBlockingQueue<Integer>(featureSize);
+        while (!playerTokens.isEmpty()) {
+            Integer current = playerTokens.poll();
+            if (current != slot) {
+                temp.add(current);
+            }
+        }
+        playerTokens = temp;
+    }
 }

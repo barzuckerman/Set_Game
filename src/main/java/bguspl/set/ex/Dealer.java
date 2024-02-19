@@ -5,7 +5,8 @@ import bguspl.set.ThreadLogger;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -38,7 +39,7 @@ public class Dealer implements Runnable {
     /**
      * The time when the dealer needs to reshuffle the deck due to turn timeout.
      */
-    private long reshuffleTime = Integer.MAX_VALUE; //TODO
+    private long reshuffleTime = Integer.MAX_VALUE;
 
     // our implement from here
 
@@ -51,7 +52,24 @@ public class Dealer implements Runnable {
      * queue of players who claim to have a set
      */
     private LinkedBlockingQueue<Integer> playersClaimSet = new LinkedBlockingQueue<>();
+
+
+    /**
+     * The thread of the dealer
+     */
     private Thread dealerThread;
+
+    public final Object playerLock;
+    public boolean cardDealing;
+
+    /**
+     * in order not to make magic numbers
+     */
+    private final int featureSize;
+
+    Semaphore sem;
+
+    //private List<ThreadLogger> Pthreads;
 
 
     public Dealer(Env env, Table table, Player[] players) {
@@ -77,11 +95,13 @@ public class Dealer implements Runnable {
         dealerThread = Thread.currentThread(); //saving the dealer thread
         while (!shouldFinish()) { //Game end conditions met
             placeCardsOnTable();
+            table.hints();
             timerLoop();
             updateTimerDisplay(true);
             removeAllCardsFromTable();
         }
         announceWinners();
+//        terminatePlayersThreads();
         env.logger.info("thread " + Thread.currentThread().getName() + " terminated.");
 //        try {
 //            dealerThread.join(); // Wait for the thread to finish
@@ -94,10 +114,19 @@ public class Dealer implements Runnable {
     private void timerLoop() {
         reshuffleTime = System.currentTimeMillis() + env.config.turnTimeoutMillis;
         while (!terminate && System.currentTimeMillis() < reshuffleTime) {
-            sleepUntilWokenOrTimeout();
-            updateTimerDisplay(false);
-            removeCardsFromTable();
-            placeCardsOnTable();
+            sleepUntilWokenOrTimeout(); // sleep for 1 sec
+            updateTimerDisplay(false); // countdown
+            if (dealerThread.interrupted()) { // player claim set
+                removeCardsFromTable();
+                placeCardsOnTable();
+                legalSetMade = false;
+                synchronized (playerLock) {
+                    playerLock.notifyAll();
+                }
+                reshuffleTime = System.currentTimeMillis() + env.config.turnTimeoutMillis;
+                updateTimerDisplay(true); // reset timer after a legal set
+                table.hints();
+            }
         }
     }
 
@@ -108,7 +137,6 @@ public class Dealer implements Runnable {
         // TODO implement
         for (Player player : players)
             player.terminate();
-
         terminate = true;
     }
 
@@ -118,6 +146,7 @@ public class Dealer implements Runnable {
      * @return true iff the game should be finished.
      */
     private boolean shouldFinish() {
+
         return terminate || env.util.findSets(deck, 1).size() == 0;
     }
 
@@ -126,10 +155,25 @@ public class Dealer implements Runnable {
      */
     private void removeCardsFromTable() {
         // TODO implement
-//                for (int card : cards){
-//                    int slot = table.cardToSlot[card];
-//                    table.removeCard(slot);
-//                }
+        int[] slots = null;
+        int playerId = playersClaimSet.poll();
+        for (Player p : players) { //to find the slots we need to delete from the table
+            if (p.id == playerId) {
+                slots = p.getPlayerTokens().stream().mapToInt(Integer::intValue).toArray();
+            }
+        }
+        for (Player p : players) {
+            if (slots != null) {
+                for (int slot : slots) {
+                    if (table.removeToken(p.id, slot)) { // if a player has a token on a slot we want to remove
+                        p.removeToken(slot); // remove the token from the player queue
+                    }
+                    if (p.id == playerId) { //in case we are in the player who called set we want to remove the cards
+                        table.removeCard(slot);
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -156,8 +200,12 @@ public class Dealer implements Runnable {
     private void sleepUntilWokenOrTimeout() {
         // TODO implement
         try {
-            Thread.sleep(1000);
+            synchronized (playerLock) {
+                Thread.sleep(1000);
+            }
         } catch (InterruptedException ignored) {
+            Thread.currentThread().interrupt();
+
         }
     }
 
@@ -180,13 +228,19 @@ public class Dealer implements Runnable {
      */
     private void removeAllCardsFromTable() {
         // TODO implement
+        cardDealing = true;
         for (Integer card : table.slotToCard) { // return each card from the table to the deck
-            deck.add(card);
+            if (card != null)
+                deck.add(card);
         }
         for (int i = 0; i < env.config.tableSize; i++) {
             table.removeCard(i);
             table.resetTokens();
         }
+        for (Player p : players) {
+            p.resetQueue();
+        }
+        cardDealing = false;
     }
 
     /**
@@ -223,29 +277,50 @@ public class Dealer implements Runnable {
     }
 
     private void isLegalSetMade(int playerId) {
-        for (Player p : players) {
-            if (p.id == playerId) {
-                int[] slots = p.getActions().stream().mapToInt(Integer::intValue).toArray(); // convert the actions queue to array of slots with token
-                int[] cards = table.cardsTokenedByPlayer(slots); // convert the token slots to cards
-                legalSetMade = env.util.testSet(cards); // check if the player found a legal set
-                if (legalSetMade) { // the set is legal - remove cards + reward
-                    dealerThread.interrupt();
-                    p.point();
-                } else // the set is illegal - penalize
-                    p.penalty();
-                break;
+        try {
+            sem.acquire();
+            for (Player p : players) {
+                if (p.id == playerId) {
+                    int[] slots = p.getPlayerTokens().stream().mapToInt(Integer::intValue).toArray();
+
+                    if (slots.length == featureSize) {
+                        int[] cards = table.cardsTokenedByPlayer(slots);
+                        legalSetMade = env.util.testSet(cards);
+
+                        if (legalSetMade) {
+                            synchronized (playerLock) {
+                                dealerThread.interrupt();
+
+                                while (legalSetMade) {
+                                    try {
+                                        playerLock.wait();
+                                    } catch (InterruptedException ignored) {
+                                        Thread.currentThread().interrupt();
+                                    }
+                                }
+                                sem.release();  // Release the semaphore after waiting but before calling p.point()
+                                p.point();
+                                p.resetQueue();
+                            }
+                        } else {
+                            sem.release();
+                            playersClaimSet.poll();
+                            p.penalty();
+                        }
+                        break;
+                    } else
+                        sem.release();
+                }
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 
     // TODO check if necessary
     public void setPlayersClaimSet(int playerId) {
-        synchronized (playersClaimSet) {
-            playersClaimSet.add(playerId);
-            isLegalSetMade(playerId);
-            //playersClaimSet.notifyAll();
-        }
-
+        playersClaimSet.add(playerId);
+        isLegalSetMade(playerId);
     }
 
 
@@ -259,3 +334,5 @@ public class Dealer implements Runnable {
 //        }
 //    }
 }
+
+

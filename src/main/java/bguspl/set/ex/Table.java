@@ -107,6 +107,7 @@ public class Table {
         try {
             Thread.sleep(env.config.tableDelayMillis);
         } catch (InterruptedException ignored) {
+
         }
 
         cardToSlot[card] = slot;
@@ -128,9 +129,11 @@ public class Table {
         }
 
         // TODO implement
-        cardToSlot[slotToCard[slot]] = null; //TODO check
-        slotToCard[slot] = null;
-        env.ui.removeCard(slot);
+        if (slotToCard[slot] != null) {
+            cardToSlot[slotToCard[slot]] = null;
+            slotToCard[slot] = null;
+            env.ui.removeCard(slot);
+        }
     }
 
     /**
@@ -170,5 +173,19 @@ public class Table {
         return cards;
     }
 
+    public boolean isPlacedToken (int playerId, int slot){
+        if(tokendSlots[playerId][slot] == 0)
+            return false;
+        return true;
+    }
 
+    public void resetTokens(){
+        for (int i = 0; i<env.config.players ; i++){
+            for (int j = 0; j<env.config.tableSize; j++)
+            {
+                if (tokendSlots[i][j] == 1)
+                    removeToken(i,j);
+            }
+        }
+    }
 }

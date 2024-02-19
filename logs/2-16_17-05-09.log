@@ -1,0 +1,43 @@
+[17:05:09.584] [INFO   ] thread main starting.
+[17:05:09.592] [SEVERE ] cannot read configuration file config.properties trying from resources.
+[17:05:09.593] [SEVERE ] configuration file was loaded from resources directory.
+[17:05:10.623] [INFO   ] thread dealer starting.
+[17:05:10.624] [INFO   ] thread dealer starting.
+[17:05:10.624] [INFO   ] thread player 0 starting.
+[17:05:10.625] [INFO   ] thread player 1 starting.
+[17:05:10.754] [SEVERE ] placing card 34 in slot 0
+[17:05:10.863] [SEVERE ] placing card 32 in slot 1
+[17:05:10.972] [SEVERE ] placing card 74 in slot 2
+[17:05:11.080] [SEVERE ] placing card 44 in slot 3
+[17:05:11.191] [SEVERE ] placing card 37 in slot 4
+[17:05:11.299] [SEVERE ] placing card 66 in slot 5
+[17:05:11.405] [SEVERE ] placing card 12 in slot 6
+[17:05:11.513] [SEVERE ] placing card 26 in slot 7
+[17:05:11.622] [SEVERE ] placing card 40 in slot 8
+[17:05:11.731] [SEVERE ] placing card 16 in slot 9
+[17:05:11.840] [SEVERE ] placing card 70 in slot 10
+[17:05:11.948] [SEVERE ] placing card 36 in slot 11
+[17:05:12.954] [SEVERE ] updating countdown to 58994
+[17:05:13.959] [SEVERE ] updating countdown to 57989
+[17:05:14.763] [SEVERE ] exit button pressed
+[17:05:14.764] [INFO   ] thread player 1 terminated.
+[17:05:14.764] [INFO   ] thread player 0 terminated.
+[17:05:14.966] [SEVERE ] updating countdown to 56982
+[17:05:14.967] [SEVERE ] updating countdown to 60000
+[17:05:15.076] [SEVERE ] removing card from slot 0
+[17:05:15.185] [SEVERE ] removing card from slot 1
+[17:05:15.294] [SEVERE ] removing card from slot 2
+[17:05:15.402] [SEVERE ] removing card from slot 3
+[17:05:15.513] [SEVERE ] removing card from slot 4
+[17:05:15.623] [SEVERE ] removing card from slot 5
+[17:05:15.732] [SEVERE ] removing card from slot 6
+[17:05:15.841] [SEVERE ] removing card from slot 7
+[17:05:15.947] [SEVERE ] removing card from slot 8
+[17:05:16.054] [SEVERE ] removing card from slot 9
+[17:05:16.162] [SEVERE ] removing card from slot 10
+[17:05:16.270] [SEVERE ] removing card from slot 11
+[17:05:16.271] [SEVERE ] announcing winner(s): player 1, player 2
+[17:05:16.272] [INFO   ] thread dealer terminated.
+[17:05:16.272] [INFO   ] thread dealer terminated.
+[17:05:16.272] [SEVERE ] thanks for playing... it was fun!
+[17:05:16.272] [INFO   ] thread main terminated.
