@@ -1,4 +1,4 @@
-**Concurrent Set Game**
+# Concurrent Set Game
 
 The goal of this assignment is to practice concurrent programming in a Java environment.
 
