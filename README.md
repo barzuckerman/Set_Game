@@ -4,7 +4,7 @@ The goal of this assignment is to practice concurrent programming in a Java envi
 
 **All user interface (UI), graphics, and keyboard handling have been pre-implemented**
 
-**Game Rules**
+## Game Rules
 
 The game consists of a deck of 81 cards, each containing a drawing with four features: color, number, shape, and shading.
 The game starts with 12 drawn cards placed on a 3x4 grid on the table.
@@ -28,22 +28,22 @@ Player B - UIOP
             JKL;
             M,./
 
-**Player Types**
+## Player Types
 
 The game supports two player types: human and non-human.
 
 Human Players: Input is taken from the physical keyboard.
 Non-Human Players: Simulated by threads generating random key presses.
 
-**Getting Started**
+## Getting Started
 
 Clone this repository to your local machine.
 Go to main and start the game.
 
-**Contributing**
+## Contributing
 
 This project was developed by Yarden Levi and Bar Zuckerman.
 
-**License**
+## License
 
 This project is licensed as homework for BGU. All rights reserved.
